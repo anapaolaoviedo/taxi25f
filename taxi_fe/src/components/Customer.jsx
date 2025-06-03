@@ -8,13 +8,14 @@ function Customer(props) {
   let [pickupAddress, setPickupAddress] = useState("Tecnologico de Monterrey, campus Puebla, Mexico");
   let [dropOffAddress, setDropOffAddress] = useState("Triangulo Las Animas, Puebla, Mexico");
   let [msg, setMsg] = useState("");
+  let [msg1, setMsg1] = useState("");
 
   useEffect(() => {
     let channel = socket.channel("customer:" + props.username, {token: "123"});
     channel.on("greetings", data => console.log(data));
-    channel.on("booking_request", data => {
-      console.log("Received", data);
-      setMsg(data.msg);
+    channel.on("booking_request", dataFromPush => {
+      console.log("Received", dataFromPush);
+      setMsg1(dataFromPush.msg);
     });
     channel.join();
   },[props]);
@@ -24,7 +25,7 @@ function Customer(props) {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({pickup_address: pickupAddress, dropoff_address: dropOffAddress, username: props.username})
-    }).then(resp => resp.json()).then(data => setMsg(data.msg));
+    }).then(resp => resp.json()).then(dataFromPOST => setMsg(dataFromPOST.msg));
   };
 
   return (
@@ -43,6 +44,9 @@ function Customer(props) {
       </div>
       <div style={{backgroundColor: "lightcyan", height: "50px"}}>
         {msg}
+      </div>
+      <div style={{backgroundColor: "lightblue", height: "50px"}}>
+        {msg1}
       </div>
     </div>
   );

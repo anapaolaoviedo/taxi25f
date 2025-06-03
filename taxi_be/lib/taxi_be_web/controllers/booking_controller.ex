@@ -1,23 +1,26 @@
 defmodule TaxiBeWeb.BookingController do
   use TaxiBeWeb, :controller
-  # alias TaxiBeWeb.TaxiAllocationJob
+  alias TaxiBeWeb.TaxiAllocationJob
+
   def create(conn, req) do
     IO.inspect(req)
-    # booking_id = UUID.uuid1()
-    # TaxiAllocationJob.start_link(
-    #   req |> Map.put("booking_id", booking_id),
-    #   String.to_atom(booking_id)
-    # )
+    booking_id = UUID.uuid1()
+    TaxiAllocationJob.start_link(
+      req |> Map.put("booking_id", booking_id),
+      String.to_atom(booking_id)
+    )
     conn
-    |> put_resp_header("Location", "/api/123") # "/api/bookings/" <> booking_id)
+    |> put_resp_header("Location", "/api/bookings/" <> booking_id)
     |> put_status(:created)
-    |> json(%{msg: "We are processing your request"})
+    |> json(%{msg: "We are processing your request ... don't be hasty!"})
   end
-  def update(conn, %{"action" => "accept", "username" => username, "id" => _id}) do
+  def update(conn, %{"action" => "accept", "username" => username, "id" => id} = msg) do
+    GenServer.cast(String.to_atom(id), {:process_accept, msg})
     IO.inspect("'#{username}' is accepting a booking request")
     json(conn, %{msg: "We will process your acceptance"})
   end
-  def update(conn, %{"action" => "reject", "username" => username, "id" => _id}) do
+  def update(conn, %{"action" => "reject", "username" => username, "id" => id} = msg) do
+    GenServer.cast(String.to_atom(id), {:process_reject, msg})
     IO.inspect("'#{username}' is rejecting a booking request")
     json(conn, %{msg: "We will process your rejection"})
   end

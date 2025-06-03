@@ -1,0 +1,19 @@
+###
+POST http://localhost:4000/api/bookings HTTP/1.1
+content-type: application/json
+
+{
+    "username": "galadriel",
+    "pickup-address": "Tec de Monterrey",
+    "dropoff-address": "Paseo Destino"
+}
+
+###
+POST http://localhost:4000/api/bookings/843f9ca0-35aa-11f0-9f34-f25988c27319 HTTP/1.1
+content-type: application/json
+
+{
+    "username": "galadriel",
+    "action": "cancel",
+    "id": "123"
+}
