@@ -6,8 +6,9 @@ defmodule TaxiBeWeb.TaxiAllocationJob do
   end
 
   def init(request) do
-    Process.send(self(), :step1, [:nosuspend])
-    {:ok, %{request: request}}
+    Process.send(self(), :step1, [:nosuspend])          # Start step1 logic
+    Process.send_after(self(), :timeout, 60_000)        # Trigger timeout in 1 min
+    {:ok, %{request: request, status: :waiting}}        # Store request & state
   end
 
 def compute_ride_fare(request) do
