@@ -29,9 +29,9 @@ end
 
 def find_candidate_taxis(%{"pickup_address" => _pickup_address}) do
   [
-    %{nickname: "frodo", latitude: 19.0319783, longitude: -98.2349368},
-    %{nickname: "pippin", latitude: 19.0061167, longitude: -98.2697737},
-    %{nickname: "samwise", latitude: 19.0092933, longitude: -98.2473716}
+    %{nickname: "Travis", latitude: 19.0319783, longitude: -98.2349368},
+    %{nickname: "Drake", latitude: 19.0061167, longitude: -98.2697737},
+    %{nickname: "Kendrick", latitude: 19.0092933, longitude: -98.2473716}
   ]
 end
 

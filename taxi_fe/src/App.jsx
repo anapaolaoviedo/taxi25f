@@ -6,10 +6,10 @@ import Driver from './components/Driver';
 function App() {
   return (
     <div className="App">
-      <Customer username="galadriel"/>
-      <Driver username="frodo"/>
-      <Driver username="pippin"/>
-      <Driver username="samwise"/>
+      <Customer username="Ana Paola"/>
+      <Driver username="Travis"/>
+      <Driver username="Drake"/>
+      <Driver username="Kendrick"/>
     </div>
   )
 }
