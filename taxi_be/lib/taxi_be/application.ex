@@ -13,6 +13,11 @@ defmodule TaxiBe.Application do
       {Phoenix.PubSub, name: TaxiBe.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: TaxiBe.Finch},
+
+      # Iniciar el Registry para nuestros procesos de booking
+      {Registry, [keys: :unique, name: TaxiBe.BookingRegistry]},
+      # <<-- FIN: NUEVAS ADICIONES -->>
+
       # Start a worker by calling: TaxiBe.Worker.start_link(arg)
       # {TaxiBe.Worker, arg},
       # Start to serve requests, typically the last entry
