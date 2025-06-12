@@ -12,12 +12,7 @@ defmodule TaxiBeWeb.CustomerChannel do
   # El cliente solicita un viaje
   @impl true
   def handle_in("request_ride", payload, socket) do
-    # TODO: Aquí deberías crear la reservación en la base de datos
-    # y obtener un `booking`
-    # {:ok, booking} = Bookings.create_booking(Map.put(payload, "customer_id", socket.assigns.user_id))
 
-    # --- Inicio: Código de simulación (reemplazar con BD) ---
-    # Para fines de demostración, creamos un booking falso.
     fake_booking = %{
       id: Ecto.UUID.generate(),
       origin: payload["origin"],
