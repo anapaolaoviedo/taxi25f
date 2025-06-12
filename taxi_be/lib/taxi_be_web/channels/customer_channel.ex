@@ -2,7 +2,8 @@ defmodule TaxiBeWeb.CustomerChannel do
   use TaxiBeWeb, :channel
 
   alias TaxiBe.BookingProcess
-  alias TaxiBe.Bookings # Asumimos que tienes un contexto para la BD
+  alias TaxiBe.ConcurrentBookingProcess
+  alias TaxiBe.Bookings
 
   @impl true
   def join("customer:" <> _username, _payload, socket) do
@@ -21,17 +22,29 @@ defmodule TaxiBeWeb.CustomerChannel do
     }
     # --- Fin: Código de simulación ---
 
-    # Inicia el proceso de búsqueda de conductor
-    {:ok, _pid} = GenServer.start_link(
-      BookingProcess,
-      %{booking: fake_booking, customer_pid: self()},
-      name: {:via, Registry, {TaxiBe.BookingRegistry, fake_booking.id}}
-    )
+    # Decidimos qué proceso iniciar basado en el payload
+    case payload["version"] do
+      "concurrent" ->
+        # Inicia el proceso de búsqueda CONCURRENTE
+        {:ok, _pid} = GenServer.start_link(
+          ConcurrentBookingProcess,
+          %{booking: fake_booking, customer_pid: self()},
+          name: {:via, Registry, {TaxiBe.ConcurrentBookingRegistry, fake_booking.id}}
+        )
+
+      _ ->
+        # Inicia el proceso SECUENCIAL por defecto
+        {:ok, _pid} = GenServer.start_link(
+          BookingProcess,
+          %{booking: fake_booking, customer_pid: self()},
+          name: {:via, Registry, {TaxiBe.BookingRegistry, fake_booking.id}}
+        )
+    end
 
     {:reply, {:ok, %{status: "Searching for a driver...", booking_id: fake_booking.id}}, socket}
   end
 
-  # Recibimos mensajes internos del BookingProcess
+  # Recibimos mensajes internos de los procesos de booking
   @impl true
   def handle_info({:ride_accepted, data}, socket) do
     push(socket, "ride_accepted", data)
