@@ -6,7 +6,7 @@ import { Socket } from 'phoenix';
 function Customer(props) {
   const [pickupAddress, setPickupAddress] = useState("Tecnologico de Monterrey, campus Puebla, Mexico");
   const [dropOffAddress, setDropOffAddress] = useState("Triangulo Las Animas, Puebla, Mexico");
-  const [statusMessage, setStatusMessage] = useState("Submit a ride request.");
+  const [statusMessage, setStatusMessage] = useState("Submit a ride request to begin.");
   const [bookingId, setBookingId] = useState(null);
   const [hasActiveBooking, setHasActiveBooking] = useState(false);
 
@@ -21,17 +21,17 @@ function Customer(props) {
 
     channel.on("ride_accepted", (payload) => {
       const eta = new Date(payload.driver.eta).toLocaleTimeString();
-      setStatusMessage(`Ride accepted! Driver: ${payload.driver.name}. ETA: ${eta}`);
+      setStatusMessage(`Ride accepted! Driver: ${payload.driver.name}. Arriving around: ${eta}`);
     });
 
-    channel.on("ride_not_fulfilled", () => {
-      setStatusMessage('Could not find a driver. Please try again.');
+    channel.on("ride_not_fulfilled", (payload) => {
+      setStatusMessage(`Could not find a driver: ${payload.reason}. Please try again.`);
       setHasActiveBooking(false);
       setBookingId(null);
     });
 
     channel.on("ride_cancelled_successfully", (payload) => {
-      let message = "Your ride was cancelled successfully.";
+      let message = "Your ride was successfully cancelled.";
       if (payload.charge > 0) {
         message += ` A charge of $${payload.charge} has been applied.`;
       }
@@ -41,10 +41,11 @@ function Customer(props) {
     });
 
     channel.join()
-      .receive("ok", () => console.log("Customer channel joined"))
-      .receive("error", () => console.log("Failed to join customer channel"));
+      .receive("ok", () => console.log("Customer channel joined for " + props.username))
+      .receive("error", (resp) => console.log("Unable to join", resp));
 
     return () => {
+      channel.leave();
       socket.disconnect();
     };
   }, [props.username]);
@@ -56,8 +57,7 @@ function Customer(props) {
       
       channelRef.current.push("request_ride", {
         origin: pickupAddress,
-        destination: dropOffAddress,
-        version: "concurrent"
+        destination: dropOffAddress
       })
       .receive("ok", (resp) => {
         setBookingId(resp.booking_id);
@@ -100,7 +100,7 @@ function Customer(props) {
           disabled={hasActiveBooking}
           style={{ marginRight: "10px" }}
         >
-          Submit
+          Request Ride
         </Button>
 
         <Button
@@ -113,7 +113,7 @@ function Customer(props) {
         </Button>
       </div>
 
-      <div style={{ marginTop: "20px", background: "lightcyan", padding: "10px" }}>
+      <div style={{ marginTop: "20px", background: "lightcyan", padding: "10px", minHeight: "40px" }}>
         {statusMessage}
       </div>
     </div>

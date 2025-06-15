@@ -10,25 +10,20 @@ defmodule TaxiBeWeb.CustomerChannel do
 
   @impl true
   def handle_in("request_ride", payload, socket) do
-    fake_booking = %{
-      id: Ecto.UUID.generate(),
-      origin: payload["origin"],
-      destination: payload["destination"],
-      status: "searching"
-    }
-
-    start_options = [
-      name: {:via, Registry, {TaxiBe.ConcurrentBookingRegistry, fake_booking.id}}
-    ]
+    booking_id = Ecto.UUID.generate()
 
     init_args = %{
-      booking: fake_booking,
+      booking: %{id: booking_id, origin: payload["origin"], destination: payload["destination"]},
       customer_pid: self()
     }
 
+    start_options = [
+      name: {:via, Registry, {TaxiBe.ConcurrentBookingRegistry, booking_id}}
+    ]
+
     {:ok, _pid} = GenServer.start_link(ConcurrentBookingProcess, init_args, start_options)
 
-    {:reply, {:ok, %{booking_id: fake_booking.id}}, socket}
+    {:reply, {:ok, %{booking_id: booking_id}}, socket}
   end
 
   @impl true
@@ -39,13 +34,13 @@ defmodule TaxiBeWeb.CustomerChannel do
 
         case response do
           :ok_no_charge ->
-            push(socket, "ride_cancelled_successfully", %{status: "cancelled", charge: 0})
+            push(socket, "ride_cancelled_successfully", %{charge: 0})
           :ok_charge_applied ->
-            push(socket, "ride_cancelled_successfully", %{status: "cancelled", charge: 20})
+            push(socket, "ride_cancelled_successfully", %{charge: 20})
         end
 
         GenServer.stop(pid)
-      _ ->
+      [] ->
         :ok
     end
     {:noreply, socket}
